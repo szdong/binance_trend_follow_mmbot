@@ -118,20 +118,6 @@ def color_print(text: str, color: pycolor):
     print(color + text + pycolor.END)
 
 
-def line_notify(message, pic=False, path=None):
-    line_notify_api = 'https://notify-api.line.me/api/notify'
-    message = "\n" + message
-    payload = {'message': message}
-
-    if pic == False:
-        headers = {'Authorization': 'Bearer ' + line_notify_key}
-        requests.post(line_notify_api, data=payload, headers=headers)
-    else:
-        files = {"imageFile": open(path, "rb")}
-        headers = {'Authorization': 'Bearer ' + line_notify_key}
-        requests.post(line_notify_api, data=payload, headers=headers, files=files)
-
-
 def get_time():
     return int(datetime.now().timestamp() * 1000)
 
@@ -191,7 +177,7 @@ def robot(binance_websocket_api_manager, binance: Binance):
                                         if order_status["status"] == "open":
                                             binance.limit_buy_order(param.pair, param.lot,
                                                                     (param.target_buy_price(
-                                                                        bid + param.unit) - param.spread))
+                                                                        order_price) - param.spread))
                                             order_time = get_time()
 
                         price_queue.pop(0)
@@ -256,7 +242,6 @@ def main():
 
 
 if __name__ == '__main__':
-    line_notify_key = ""
     price_queue = []
     volume_queue = []
     wam_avg = 0
