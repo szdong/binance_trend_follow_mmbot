@@ -1,0 +1,18 @@
+{
+  "api_key": "",
+  "api_secret": "",
+  "pair": "BTC/USDT",
+  "digit": 2,
+  "lot": 0.003,
+  "delta": 3,
+  "spread": 3,
+  "queue_number": 200,
+  "force_close": 50,
+  "max_position": 0.3,
+  "wait_time": 3,
+  "maker_fee_rate": 0.00012,
+  "taker_fee_rate": 0.00024,
+  "start_balance": 500,
+  "slippage": 3,
+  "switch": true
+}
