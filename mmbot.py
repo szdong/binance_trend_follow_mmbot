@@ -156,7 +156,8 @@ def robot(binance_websocket_api_manager, binance: Binance):
                                 if position < param.max_position:
                                     now = get_time()
                                     if (now - order_time >= param.wait_time) or order_time == 0:
-                                        order_price = bid + param.unit * param.slippage
+                                        # order_price = bid + param.unit * param.slippage
+                                        order_price = ask - param.unit
                                         result = binance.limit_buy_order(param.pair, param.lot, order_price, True)
                                         order_time = get_time()
                                         order_status = binance.binance.fetch_order(id=result["id"], symbol=param.pair)
@@ -170,7 +171,8 @@ def robot(binance_websocket_api_manager, binance: Binance):
                                 if position < param.max_position:
                                     now = get_time()
                                     if (now - order_time >= param.wait_time) or order_time == 0:
-                                        order_price = ask - param.unit * param.slippage
+                                        # order_price = ask - param.unit * param.slippage
+                                        order_price = bid + param.unit
                                         result = binance.limit_sell_order(param.pair, param.lot, order_price, True)
                                         order_time = get_time()
                                         order_status = binance.binance.fetch_order(id=result["id"], symbol=param.pair)
