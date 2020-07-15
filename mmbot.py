@@ -81,6 +81,8 @@ class robot_param:
         self.digit = param_data["digit"]
         self.lot = param_data["lot"]
         self.delta = param_data["delta"]
+        self.dynamic_spread = param_data["dynamic_spread"]
+        self.dynamic_spread_percentage = param_data["dynamic_spread_percentage"]
         self.spread = param_data["spread"]
         self.queue_number = param_data["queue_number"]
         self.force_close = param_data["force_close"]
@@ -139,13 +141,13 @@ def robot(binance_websocket_api_manager, binance: Binance):
                 param = robot_param(param_json)
 
                 raw_data = json.loads(oldest_stream_data_from_stream_buffer)
-                if raw_data["stream"] == "btcusdt@aggTrade":
+                if raw_data["stream"] == "{0}@aggTrade".format(rename_pair(param.pair)):
                     ticker = raw_data["data"]
                     if len(price_queue) <= param.queue_number + 1:
                         price_queue.append(float(ticker['p']))
                         volume_queue.append(float(ticker['q']))
                     print(json.dumps(ticker, indent=4))
-                elif raw_data["stream"] == "btcusdt@depth5":
+                elif raw_data["stream"] == "{0}@depth5".format(rename_pair(param.pair)):
                     bid = float(raw_data["data"]["b"][0][0])
                     ask = float(raw_data["data"]["a"][0][0])
 
@@ -162,9 +164,16 @@ def robot(binance_websocket_api_manager, binance: Binance):
                                         order_time = get_time()
                                         order_status = binance.binance.fetch_order(id=result["id"], symbol=param.pair)
                                         if order_status["status"] == "open":
-                                            binance.limit_sell_order(param.pair, param.lot,
-                                                                     (param.target_sell_price(
-                                                                         order_price) + param.spread))
+                                            target_price = param.target_sell_price(order_price)
+                                            if param.dynamic_spread:
+                                                cost_spread = abs(target_price - order_price)
+                                                dynamic_spread = round(cost_spread * param.dynamic_spread_percentage,
+                                                                       param.digit)
+                                                binance.limit_sell_order(param.pair, param.lot,
+                                                                         target_price + dynamic_spread)
+                                            else:
+                                                binance.limit_sell_order(param.pair, param.lot,
+                                                                         target_price + param.spread)
                                             order_time = get_time()
                         else:
                             if volume_wam(price_queue, volume_queue) - float(ticker['p']) >= param.delta:
@@ -177,9 +186,16 @@ def robot(binance_websocket_api_manager, binance: Binance):
                                         order_time = get_time()
                                         order_status = binance.binance.fetch_order(id=result["id"], symbol=param.pair)
                                         if order_status["status"] == "open":
-                                            binance.limit_buy_order(param.pair, param.lot,
-                                                                    (param.target_buy_price(
-                                                                        order_price) - param.spread))
+                                            target_price = param.target_buy_price(order_price)
+                                            if param.dynamic_spread:
+                                                cost_spread = abs(target_price - order_price)
+                                                dynamic_spread = round(cost_spread * param.dynamic_spread_percentage,
+                                                                       param.digit)
+                                                binance.limit_buy_order(param.pair, param.lot,
+                                                                        target_price - dynamic_spread)
+                                            else:
+                                                binance.limit_buy_order(param.pair, param.lot,
+                                                                        (target_price - param.spread))
                                             order_time = get_time()
 
                         price_queue.pop(0)

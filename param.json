@@ -5,6 +5,8 @@
   "digit": 2,
   "lot": 0.003,
   "delta": 3,
+  "dynamic_spread": false,
+  "dynamic_spread_percentage": 0.3,
   "spread": 3,
   "queue_number": 200,
   "force_close": 50,
